@@ -1,4 +1,4 @@
-const AI_BASE_URL = "http://127.0.0.1:8000";
+const AI_BASE_URL = "https://ksbl-ai.vercel.app";
 
 const fetchQuizQuestions = async (quizId) => {
   const response = await fetch(`${AI_BASE_URL}/v1/quizzes/${quizId}/review-export`);
