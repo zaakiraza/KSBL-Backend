@@ -13,6 +13,7 @@ const questionSchema = new mongoose.Schema(
 const quizSchema = new mongoose.Schema(
   {
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    classId: { type: String, required: true },
     topicName: { type: String, required: true },
     expiresAt: { type: Date, required: true },
     questionCount: { type: Number, required: true },

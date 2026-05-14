@@ -6,7 +6,7 @@ export const quizController = {
   createQuiz: async (req, res) => {
     try {
       const {
-        pdfBase64,
+        classId,
         topicName,
         expiresAt,
         questionCount,
@@ -14,38 +14,45 @@ export const quizController = {
         equalMarksPerQuestion,
         complexityLevel,
         maxAttempts,
+        url,
       } = req.body;
 
-      if (!pdfBase64 || !topicName || !expiresAt || !questionCount || !marksType || !complexityLevel)
+      if (!classId || !topicName || !expiresAt || !questionCount || !marksType || !complexityLevel)
         return errorResponse(
           res,
-          "pdfBase64, topicName, expiresAt, questionCount, marksType and complexityLevel are required.",
+          "classId, topicName, expiresAt, questionCount, marksType and complexityLevel are required.",
           400
         );
 
+      if (!req.file && !url)
+        return errorResponse(res, "Either a PDF file or a url is required.", 400);
+
       const aiQuestions = await generateQuiz({
-        pdfBase64,
-        questionCount,
-        complexityLevel,
-        topic: topicName,
+        teacherId: req.user.id,
+        classId,
+        title: topicName,
+        fileBuffer: req.file?.buffer,
+        fileName: req.file?.originalname,
+        url,
       });
 
       const questions = aiQuestions.map((q) => ({
         questionText: q.questionText,
         options: q.options,
         correctAnswer: q.correctAnswer,
-        marks: marksType === "equal" && equalMarksPerQuestion ? equalMarksPerQuestion : null,
+        marks: marksType === "equal" && equalMarksPerQuestion ? Number(equalMarksPerQuestion) : null,
       }));
 
       const quiz = await Quiz.create({
         teacherId: req.user.id,
+        classId,
         topicName,
         expiresAt,
-        questionCount,
+        questionCount: Number(questionCount),
         marksType,
-        equalMarksPerQuestion: marksType === "equal" ? (equalMarksPerQuestion ?? null) : null,
+        equalMarksPerQuestion: marksType === "equal" ? (Number(equalMarksPerQuestion) ?? null) : null,
         complexityLevel,
-        maxAttempts: maxAttempts || 1,
+        maxAttempts: Number(maxAttempts) || 1,
         questions,
       });
 

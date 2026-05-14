@@ -2,11 +2,11 @@
   "info": {
     "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "name": "KSBL Quiz Platform",
-    "description": "Full API test suite for the KSBL AI-powered quiz platform.\n\nFlow:\n1. Register as teacher → Login as teacher (token auto-saved)\n2. Add a student → Login as student (token auto-saved)\n3. Create quiz (quiz_id auto-saved) → Set marks → Publish\n4. Student: Get available quizzes → Submit attempt\n5. Teacher: View results",
+    "description": "Full API test suite for the KSBL AI-powered quiz platform.\n\nOur server: http://localhost:8080\nAI server:  http://127.0.0.1:8000\n\nAI quiz generation is a 2-step internal process:\n  1. POST /v1/ingestions          → returns x-quiz-id\n  2. GET  /v1/quizzes/{id}/review-export  → returns questions\nBoth steps run inside our server. Frontend only calls /api/quiz.\n\nRecommended test order:\n1. Register Teacher  →  Login Teacher  (teacher_token auto-saved)\n2. Add Student       →  Login Student  (student_token auto-saved)\n3. Create Quiz (upload PDF or pass url field)  →  quiz_id auto-saved\n4. Set Question Marks  →  Publish Quiz\n5. Student: Get Available Quizzes  →  Submit Attempt\n6. Teacher: Get Quiz Results",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "base_url", "value": "http://localhost:5000", "type": "string" },
+    { "key": "base_url", "value": "http://localhost:8080", "type": "string" },
     { "key": "teacher_token", "value": "", "type": "string" },
     { "key": "student_token", "value": "", "type": "string" },
     { "key": "quiz_id", "value": "", "type": "string" }
@@ -138,14 +138,25 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{teacher_token}}" }
             ],
             "url": { "raw": "{{base_url}}/api/quiz", "host": ["{{base_url}}"], "path": ["api", "quiz"] },
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"pdfBase64\": \"JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwvTGVuZ3RoIDMgMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+\",\n  \"topicName\": \"Introduction to Machine Learning\",\n  \"expiresAt\": \"2026-06-01T23:59:00.000Z\",\n  \"questionCount\": 5,\n  \"marksType\": \"equal\",\n  \"equalMarksPerQuestion\": 10,\n  \"complexityLevel\": \"medium\",\n  \"maxAttempts\": 2\n}",
-              "options": { "raw": { "language": "json" } }
+              "mode": "formdata",
+              "formdata": [
+                { "key": "classId",               "value": "class_001",                              "type": "text" },
+                { "key": "topicName",              "value": "Introduction to Machine Learning",        "type": "text" },
+                { "key": "expiresAt",              "value": "2026-06-01T23:59:00.000Z",               "type": "text" },
+                { "key": "questionCount",          "value": "5",                                      "type": "text" },
+                { "key": "marksType",              "value": "equal",                                  "type": "text" },
+                { "key": "equalMarksPerQuestion",  "value": "10",                                     "type": "text" },
+                { "key": "complexityLevel",        "value": "medium",                                 "type": "text" },
+                { "key": "maxAttempts",            "value": "2",                                      "type": "text" },
+                { "key": "file",                   "type": "file", "src": [],
+                  "description": "Select a PDF file from your computer" },
+                { "key": "url",                    "value": "",   "type": "text",
+                  "description": "PDF URL — use this instead of file if you have a hosted PDF", "disabled": true }
+              ]
             }
           }
         },
