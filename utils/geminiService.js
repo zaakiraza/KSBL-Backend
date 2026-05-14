@@ -8,7 +8,7 @@ export const generateQuizWithGemini = async ({
   url,
 }) => {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `You are a quiz generator. Based on the provided content about "${topicName}", generate exactly ${questionCount} multiple choice questions with ${complexityLevel} complexity level.
 
