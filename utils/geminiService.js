@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
 export const generateQuizWithGemini = async ({
   topicName,
@@ -7,8 +7,7 @@ export const generateQuizWithGemini = async ({
   fileBuffer,
   url,
 }) => {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const prompt = `You are a quiz generator. Based on the provided content about "${topicName}", generate exactly ${questionCount} multiple choice questions with ${complexityLevel} complexity level.
 
@@ -21,25 +20,37 @@ IMPORTANT: Return ONLY a valid JSON array — no markdown, no code blocks, no ex
   }
 ]`;
 
-  const parts = [];
+  const messages = [{ role: "user", content: [] }];
 
   if (fileBuffer) {
-    parts.push({
-      inlineData: {
-        data: fileBuffer.toString("base64"),
-        mimeType: "application/pdf",
-      },
+    // Upload the PDF file first, then reference it
+    const file = await openai.files.create({
+      file: new File([fileBuffer], "document.pdf", { type: "application/pdf" }),
+      purpose: "assistants",
+    });
+
+    messages[0].content.push({
+      type: "text",
+      text: `The quiz should be based on the uploaded PDF (file ID: ${file.id}).\n\n${prompt}`,
     });
   } else if (url) {
-    parts.push({ text: `The content to base the quiz on is available at this URL: ${url}\n\n` });
+    messages[0].content.push({
+      type: "text",
+      text: `The quiz should be based on the content from this URL: ${url}\n\n${prompt}`,
+    });
+  } else {
+    messages[0].content.push({ type: "text", text: prompt });
   }
 
-  parts.push({ text: prompt });
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages,
+    temperature: 0.7,
+  });
 
-  const result = await model.generateContent(parts);
-  const text = result.response.text();
+  const text = response.choices[0].message.content;
 
-  // Strip markdown code fences if Gemini wraps the response
+  // Strip markdown code fences if present
   const cleaned = text
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
