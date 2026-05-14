@@ -1,5 +1,5 @@
 import Quiz from "../models/quiz.js";
-import { generateQuiz } from "../utils/aiService.js";
+import { generateQuizWithGemini } from "../utils/geminiService.js";
 import { errorResponse, successResponse } from "../utils/responseHandler.js";
 
 export const quizController = {
@@ -27,12 +27,11 @@ export const quizController = {
       if (!req.file && !url)
         return errorResponse(res, "Either a PDF file or a url is required.", 400);
 
-      const aiQuestions = await generateQuiz({
-        teacherId: req.user.id,
-        classId,
-        title: topicName,
+      const aiQuestions = await generateQuizWithGemini({
+        topicName,
+        questionCount: Number(questionCount),
+        complexityLevel,
         fileBuffer: req.file?.buffer,
-        fileName: req.file?.originalname,
         url,
       });
 

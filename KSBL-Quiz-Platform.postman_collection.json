@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "name": "KSBL Quiz Platform",
-    "description": "Full API test suite for the KSBL AI-powered quiz platform.\n\nOur server: http://localhost:8080\nAI server:  https://ksbl-ai.vercel.app\n\nAI quiz generation is a 2-step internal process:\n  1. POST /v1/ingestions          → returns x-quiz-id\n  2. GET  /v1/quizzes/{id}/review-export  → returns questions\nBoth steps run inside our server. Frontend only calls /api/quiz.\n\nRecommended test order:\n1. Register Teacher  →  Login Teacher  (teacher_token auto-saved)\n2. Add Student       →  Login Student  (student_token auto-saved)\n3. Create Quiz (upload PDF or pass url field)  →  quiz_id auto-saved\n4. Set Question Marks  →  Publish Quiz\n5. Student: Get Available Quizzes  →  Submit Attempt\n6. Teacher: Get Quiz Results",
+    "description": "Full API test suite for the KSBL AI-powered quiz platform.\n\nOur server: http://localhost:8080\nAI (quiz generation): Google Gemini 1.5 Flash  ← requires GEMINI_API_KEY in .env\nAI (evaluation):      https://ksbl-ai.vercel.app\n\nQuiz generation flow (internal to our server):\n  Teacher uploads PDF  →  Our server sends it to Gemini  →  Gemini returns questions  →  Saved to DB\n\nRecommended test order:\n1. Register Teacher  →  Login Teacher  (teacher_token auto-saved)\n2. Add Student       →  Login Student  (student_token auto-saved)\n3. Create Quiz (upload PDF or pass url field)  →  quiz_id auto-saved\n4. Set Question Marks  →  Publish Quiz\n5. Student: Get Available Quizzes  →  Submit Attempt\n6. Teacher: Get Quiz Results",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
